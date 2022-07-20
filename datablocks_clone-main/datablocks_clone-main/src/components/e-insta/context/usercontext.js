@@ -9,6 +9,8 @@ export function UserContextProvider({children}){
     const [values, setValues] = useState([]);
 
     const [filetype,setFileType] = useState([]);
+    const [File,setFile] = useState(null)
+    const [name, setName] = useState("untitled flow");
     useEffect(
         ()=>{
           console.log("tablerows ",tableRows)
@@ -16,12 +18,16 @@ export function UserContextProvider({children}){
         },[tableRows]
       )
     const value={
+      name,
+      setName,
         tableRows,
         setTableRows,
         values,
          setValues,
          filetype,
-         setFileType
+         setFileType,
+         File,
+         setFile
     }
      
     return(
@@ -30,3 +36,8 @@ export function UserContextProvider({children}){
         </UserContext.Provider>
     )
 }
+
+
+  
+     
+

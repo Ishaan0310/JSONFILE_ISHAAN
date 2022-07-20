@@ -9,11 +9,7 @@ import ReactFlow, {
   Background,
   MiniMap, MarkerType,
 } from 'react-flow-renderer';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
+
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -54,10 +50,8 @@ const SourceNode = ({ data }) => {
   if (data.color === "") {
     data.color = "333154"
   }
-  const [value, displayresponse, parsedData, tablerows, Values] = useResponse(null)
-
-
-  const { tableRows, setTableRows, values, setValues, filetype, setFileType } = useContext(UserContext)
+  const [value, displayresponse, parsedData, tablerows, Values] = useResponse(null) 
+  const { tableRows, setTableRows, values, setValues, filetype, setFileType,setFile } = useContext(UserContext)
   useEffect(() => {
     console.log("Table Rows ", tablerows)
     setTableRows(tablerows)
@@ -83,7 +77,7 @@ const SourceNode = ({ data }) => {
                 <left>
                   <DragIndicatorIcon sx={{ fontSize: "30px", position: "absolute", left: "5px", top: "5px", color: "white" }} />
                   <Typography fontSize="15px" position="absolute" left="30px" top="8px" color="white">
-                    Choose Json File
+                    Upload Json File
                   </Typography>
 
                 </left>
@@ -91,11 +85,12 @@ const SourceNode = ({ data }) => {
                   type="file"
                   name="file"
                   onChange={(event) => {
+                    setFile(event.target.files[0])
                     displayresponse(event);
                     { console.log("event", event) }
                     setFileType(event.target.files[0].type)
                   }}
-                  accept=".csv, .json"
+                  accept=".csv, .json, .xml"
                   className='inpf1'
                 />
                 <Typography  className='tyf1'  color="white" gutterBottom>
@@ -116,12 +111,14 @@ const SourceNode = ({ data }) => {
           position="right"
           id="a"
           className='handleright'
-          isConnectable={true}
+          isConnectable={true} 
         />
       </UserContextProvider>
     </>
   )
 }
+
+
 const DestinationNode = ({ data }) => {
   if (data.color === "") {
     data.color = "333154"
@@ -129,7 +126,8 @@ const DestinationNode = ({ data }) => {
   const [value, displayresponse, parsedData, tablerows, Values] = useResponse(null)
 
 
-  const { tableRows, setTableRows, values, setValues, filetype, setFileType } = useContext(UserContext)
+
+  const { tableRows, setTableRows, values, setValues, filetype, setFileType,File,name } = useContext(UserContext)
   useEffect(() => {
     console.log("Table Rows ", tablerows)
     setTableRows(tablerows)
@@ -143,6 +141,16 @@ const DestinationNode = ({ data }) => {
     console.log("fileType", filetype)
 
   }, [filetype])
+
+  const {
+    token, settoken,
+    flowsvalue, setflowsvalue,
+    email, setemail,
+    fname, setfname,
+    lname, setlname,
+    currflow, setcurrflow
+  } = useContext(FlowContext);
+
   const download = () =>{
 
     const blob = new Blob([File])
@@ -150,11 +158,16 @@ const DestinationNode = ({ data }) => {
     console.log(url);
     const a = document.createElement("a");
     a.href = url;
-    a.download = File.name;
-    a.click()
-    console.log(File.name);
+    const Ext_name = File.name.split(".")[1]
+    const flow_namer = document.getElementById("flow_namer")?.textContent
+    console.log(document.getElementById("flow_namer"));
+    a.download = flowsvalue[currflow].flowname+"."+new Date().toISOString()+"."+File.name;
+    
+    a.click() 
 
   }
+
+
   return (
     <>
       <UserContextProvider >
@@ -164,15 +177,13 @@ const DestinationNode = ({ data }) => {
             <React.Fragment>
               <CardContent>
                 <left>
-                  <DragIndicatorIcon sx={{ fontSize: "30px", position: "absolute", left: "5px", top: "5px", color: "white" }} />
+                <DragIndicatorIcon sx={{ fontSize: "30px", position: "absolute", left: "5px", top: "5px", color: "white" }} />
                   <Typography fontSize="15px" position="absolute" left="30px" top="8px" color="white">
-                    Json Output
+                    Json Output Node
                   </Typography>
-                  <Button variant="contained" onClick={download}>Save File</Button>
+                  <Button onClick={download}>Save File</Button>
                 </left>
-                
-               
-                
+              
                 <Typography  className='tyf1'  color="white" gutterBottom>
                   {data.value}
                 </Typography>
@@ -191,17 +202,17 @@ const DestinationNode = ({ data }) => {
           position="left"
           id="a"
           className='handlerleft'
-          isConnectable={true}
+          isConnectable={true} 
         />
       </UserContextProvider>
     </>
   )
 }
-
-const nodeTypes = { source: SourceNode, destination: DestinationNode };
+const nodeTypes = { source: SourceNode, destination:DestinationNode };
 const edgeTypes = {
   // custom: CustomEdge,
 };
+
 
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -240,7 +251,6 @@ export default function Flow() {
   const [objectEdit, setObjectEdit] = useState({});
   const [pos, setPos] = useState({});
   const [edit, setEdit] = React.useState(false);
-  const [name, setName] = useState("untitled flow");
   const [open, setOpen] = React.useState(false);
   const [scroll, setScroll] = React.useState('paper');
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -256,6 +266,8 @@ export default function Flow() {
     currflow, setcurrflow
   } = useContext(FlowContext);
 
+  const { setName,name} = useContext(UserContext)
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -263,7 +275,6 @@ export default function Flow() {
     setOpen(true);
     setScroll(scrollType);
   };
-
   const handleClose = () => {
     setOpen(false);
     setAnchorEl(null);
@@ -296,9 +307,11 @@ export default function Flow() {
       addINode()
     } if (name === "Paste") {
       addCNode()
-    } if (name === "Output") {
-      addMNode()
     }
+   if (name === "Output") {
+    addMNode()
+  }
+    
   }
   const addCNode = useCallback(() => {
     handleClose()
@@ -317,7 +330,7 @@ export default function Flow() {
         ...nodes,
         {
           id,
-          data: { id: `${id}`, label: "File ", value: "", color: "" },
+          data: { id: `${id}`, label: "Json Output ", value: "", color: "" },
           position,
         }
       ];
@@ -342,14 +355,14 @@ export default function Flow() {
         {
           id,
           type: "source",
-          data: { id: `${id}`, label: "Json Output  ", value: "", color: "" },
+          data: { id: `${id}`, label: "File ", value: "", color: "" },
           position,
         }
       ];
     });
     handleClose()
   }, [nodes]);
-
+  
   const addMNode = useCallback(() => {
     handleClose()
     reactFlowWrapper.current += 50;
@@ -368,13 +381,14 @@ export default function Flow() {
         {
           id,
           type: "destination",
-          data: { id: `${id}`, label: "Json Output  ", value: "", color: "" },
+          data: { id: `${id}`, label: "JSON ", value: "", color: "" },
           position,
         }
       ];
     });
     handleClose()
   }, [nodes]);
+
   const saveflow = () => {
     putflowsdb(0);
   }
@@ -383,7 +397,12 @@ export default function Flow() {
     getflowsdb();
   }
 
+
   const setflowname = (newname) => {
+    console.log(newname);
+    setName(newname)
+    console.log("NAME",name);
+
     let newArr = [...flowsvalue];
     newArr[currflow].flowname = newname;
     setflowsvalue(newArr);
@@ -476,7 +495,7 @@ export default function Flow() {
                       e.preventDefault();
                     }}
                   >
-                    <TextField id="outlined-basic" size='small' sx={{ input: { color: 'white' }, border: '1px solid white', width: '80%' }} value={flowsvalue[currflow].flowname} variant="outlined"
+                    <TextField id="outlined-basic " size='small' sx={{ input: { color: 'white' }, border: '1px solid white', width: '80%' }} value={flowsvalue[currflow].flowname} variant="outlined"
                       onChange={(e) => { setflowname(e.target.value) }}
                     />
                   </Button>
@@ -489,7 +508,7 @@ export default function Flow() {
                 </>
               ) :
                 (
-                  <div style={{ textAlign: "left" }}>
+                  <div style={{ textAlign: "left" }} id="flow_namer">
                     {flowsvalue[currflow].flowname}
                   </div>
                 )
