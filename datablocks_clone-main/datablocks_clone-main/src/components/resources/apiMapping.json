@@ -1,0 +1,14 @@
+{
+    "userData": {
+        "postsignup": "http://localhost:8080/signup",
+        "postlogin": "http://localhost:8080/login",
+        "postflows": "http://localhost:8080/postflows",
+        "getflows": "http://localhost:8080/getflows",
+        "putflows": "http://localhost:8080/putflows/",
+        "deleteflow": "http://localhost:8080/deleteflow/",
+        "changepassword": "http://localhost:8080/changepassword/",
+        "deleteallflows": "http://localhost:8080/deleteallflows/",
+        "deleteuser": "http://localhost:8080/deleteuser/",
+        "UploadJson": "http://localhost:8000/uploadJsonfile/?projectName=Ishaan&request=post"
+    }
+}
